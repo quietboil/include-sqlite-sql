@@ -2,7 +2,80 @@
 
 pub use include_sql::include_sql;
 
-/// Generates Rust code to use included SQL.
+/**
+Generates Rust code to use included SQL.
+
+This macro defines a trait with methods to access data and implements it for `rusqlite::Connection`.
+
+This macro recognizes and generates 3 variants of database access methods using the following selectors:
+* `?` - methods that process rows retrieved by `SELECT`,
+* `!` - methods that execute all other non-`SELECT` methods, and
+* `->` - methods that execute `RETURNING` statements and provide access to returned data.
+
+For `SELECT` statements (`?`) like:
+
+```sql
+-- name: get_loaned_books?
+-- param: user_id: &str
+SELECT book_title FROM library WHERE loaned_to = :user_id;
+```
+
+The method with the following signature is generated:
+
+```rust , ignore
+fn get_loaned_books<F>(
+    &self,
+    user_id: &str,
+    row_callback: F
+) -> -> rusqlite::Result<()>
+where F: Fn(&rusqlite::Row<'_>) -> rusqlite::Result<()>;
+```
+
+For non-select statements (`!`) - INSERT, UPDATE, DELETE, etc. - like:
+
+```sql
+-- name: loan_books!
+-- param: user_id: &str
+-- param: book_ids: i32
+UPDATE library
+   SET loaned_to = :user_id
+     , loaned_on = current_timestamp
+ WHERE book_id IN (:book_ids);
+```
+
+The method with the following signature is generated:
+
+```rust , ignore
+fn loan_books(
+    &self,
+    user_id: &str,
+    book_ids: &[i32]
+) -> rusqlite::Result<usize>;
+```
+
+For DELETE, INSERT, and UPDATE statements that return data via `RETURNING` clause (`->`) like:
+
+```sql
+-- name: add_new_book->
+-- param: isbn: &str
+-- param: book_title: &str
+INSERT INTO library (isbn, book_title)
+VALUES (:isbn, :book_title)
+RETURNING book_id;
+```
+
+The method with the following signature is generated:
+
+```rust , ignore
+fn add_new_book<F,R>(
+    &self,
+    isbn: &str,
+    book_title: &str,
+    row_callback: F
+) -> rusqlite::Result<R>
+where F: FnOnce(&rusqlite::Row<'_>) -> rusqlite::Result<R>;
+```
+*/
 #[macro_export]
 macro_rules! impl_sql {
     ( $sql_name:ident = $( { $kind:tt $name:ident ($($variant:tt $param:ident $ptype:tt)*) $doc:literal $s:tt $( $text:tt )+ } ),+ ) => {
@@ -16,6 +89,7 @@ macro_rules! impl_sql {
 }
 
 #[macro_export]
+#[doc(hidden)]
 macro_rules! decl_method {
     ( ? $name:ident $doc:literal ($($gen_type:ident)*) ($($fn_params:tt)*) ) => {
         #[doc=$doc]
@@ -74,6 +148,7 @@ macro_rules! decl_method {
 }
 
 #[macro_export]
+#[doc(hidden)]
 macro_rules! impl_method {
     ( ? $name:ident () () () => () $text:literal ) => {
         fn $name<F>(&self, row_cb: F) -> rusqlite::Result<()>
@@ -231,6 +306,7 @@ macro_rules! impl_method {
 }
 
 #[macro_export]
+#[doc(hidden)]
 macro_rules! sql_literal {
     ($($name:ident)+ => $text:literal) => {
         $text
@@ -247,6 +323,7 @@ macro_rules! sql_literal {
 }
 
 #[macro_export]
+#[doc(hidden)]
 macro_rules! bind_args {
     ($head:ident $($tail:ident)* => $stmt:ident $idx:expr) => {
         $stmt.raw_bind_parameter($idx, $head)?;
@@ -256,6 +333,7 @@ macro_rules! bind_args {
 }
 
 #[macro_export]
+#[doc(hidden)]
 macro_rules! num_args {
     () => { 0 };
     (: $head:ident $($tail:tt)*) => { 1 + $crate::num_args!($($tail)*) };
@@ -263,6 +341,7 @@ macro_rules! num_args {
 }
 
 #[macro_export]
+#[doc(hidden)]
 macro_rules! sql_len {
     () => { 0 };
     ($text:literal $($tail:tt)*) => { $text.len() + $crate::sql_len!($($tail)*) };
@@ -271,6 +350,7 @@ macro_rules! sql_len {
 }
 
 #[macro_export]
+#[doc(hidden)]
 macro_rules! dynamic_sql {
     ($stmt:ident $args:ident $i:ident) => {};
     ($stmt:ident $args:ident $i:ident $text:literal $($tail:tt)*) => {
@@ -300,5 +380,3 @@ macro_rules! dynamic_sql {
         $crate::dynamic_sql!($stmt $args $i $($tail)*);
     };
 }
-
-
