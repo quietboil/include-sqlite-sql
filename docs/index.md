@@ -137,11 +137,10 @@ where F: FnOnce(&rusqlite::Row<'_>) -> rusqlite::Result<R>;
 
 # Inferred Parameter Types
 
-If a statement parameter type is not explicitly specified via `param:`, **include-sqlite-sql** will use `impl rusqlite::ToSql` for the corresponding method parameters. For example, if the SQL from the example above has not provided its parameter type:
+If a statement parameter type is not explicitly specified via `param:`, **include-sqlite-sql** will use `impl rusqlite::ToSql` for the corresponding scalar method parameters. For example, if the SQL from the example above has not provided its parameter type:
 
 ```sql
 -- name: get_loaned_books?
--- Returns the list of books loaned to a patron
 SELECT book_title
   FROM library
  WHERE loaned_to = :user_id
@@ -151,9 +150,24 @@ SELECT book_title
 Then the signature of the generated method would be:
 
 ```rust , ignore
-/// Returns the list of books loaned to a patron
 fn get_loaned_books<F>(&self, user_id: impl rusqlite::ToSql, row_callback: F) -> rusqlite::Result<()>
 where F: Fn(&rusqlite::Row<'_>) -> rusqlite::Result<()>;
+```
+
+For the "IN list" type of parameters **include-sqlite-sql** will generate a method parameter as a slice where each element is the same generic type supplied by **include-sql**:
+
+```sql
+-- name: loan_books!
+UPDATE library
+   SET loaned_to = :user_id
+     , loaned_on = current_timestamp
+ WHERE book_id IN (:book_ids);
+```
+
+The signature of the generated method would be:
+
+```rust , ignore
+fn loan_books<BookIds: rusqlite::ToSql>(&self, user_id: impl rusqlite::ToSql, book_ids: &[BookIds]) -> rusqlite::Result<usize>;
 ```
 
 [1]: https://crates.io/crates/include-sql

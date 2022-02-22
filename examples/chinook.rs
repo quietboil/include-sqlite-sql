@@ -34,6 +34,13 @@ fn main() -> Result<()> {
         Ok(())
     })?;
 
+    db.get_customers_gen("CA", &["Apple Inc.", "Google Inc."], |row| {
+        let first_name : &str = row.get_ref("first_name")?.as_str()?;
+        let last_name  : &str = row.get_ref("last_name")?.as_str()?;
+        println!("{}, {}", last_name, first_name);
+        Ok(())
+    })?;
+
     db.begin_transaction()?;
     db.create_new_genre(99, "New Age")?;
     // RETURNING is not available before 3.35.0

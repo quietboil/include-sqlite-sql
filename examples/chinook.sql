@@ -40,6 +40,15 @@ SELECT DISTINCT LastName as last_name, FirstName as first_name
    AND Company IN (:companies)
  ORDER BY 1, 2;
 
+-- name: get_customers_gen?
+-- Retrieves names of the customers from the specified state
+-- that work at the specified compaies
+SELECT DISTINCT LastName as last_name, FirstName as first_name
+  FROM Customer
+ WHERE State = :state
+   AND Company IN (:companies)
+ ORDER BY 1, 2;
+
 -- name: create_new_genre!
 --
 -- Inserts new genre record
