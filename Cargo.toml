@@ -1,7 +1,7 @@
 [package]
 name = "include-sqlite-sql"
 description = "A Yesql inspired macro for using SQLite SQL in Rust"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Alex Demenchuk <alexander.demenchuk@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -11,8 +11,10 @@ repository = "https://github.com/quietboil/include-sqlite-sql"
 homepage = "https://quietboil.github.io/include-sqlite-sql"
 
 [dependencies]
-rusqlite = "0.26"
 include-sql = "0.2"
+
+[dev-dependencies]
+rusqlite = "0.26"
 
 [package.metadata.docs.rs]
 rustdoc-args = ["--cfg", "docsrs"]
