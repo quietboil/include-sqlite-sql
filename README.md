@@ -1,3 +1,7 @@
+[![crates.io](https://img.shields.io/crates/v/include-sqlite-sql)](https://crates.io/crates/include-sqlite-sql)
+[![Documentation](https://docs.rs/include-sqlite-sql/badge.svg)](https://docs.rs/include-sqlite-sql)
+![MIT](https://img.shields.io/crates/l/include-sqlite-sql.svg)
+
 **include-sqlite-sql** is an extension of [include-sql][1] for using SQLite SQL in Rust. It completes include-sql by providing `impl_sql` macro to generate database access methods from the included SQL. include-sqlite-sql uses [Rusqlite][2] for database access.
 
 # Example
