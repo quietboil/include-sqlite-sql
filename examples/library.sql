@@ -19,7 +19,6 @@ INSERT INTO library (book_author, book_title) VALUES ('Margaret Mitchell', 'Gone
 INSERT INTO library (book_author, book_title) VALUES ('Boris Pasternak', 'Doctor Zhivago');
 INSERT INTO library (book_author, book_title) VALUES ('J. R. R. Tolkien', 'The Lord of the Rings');
 INSERT INTO library (book_author, book_title) VALUES ('A. A Milne', 'Winnie the Pooh');
-/
 
 -- name: get_loaned_books ?
 --
@@ -33,7 +32,6 @@ SELECT book_title
   FROM library
  WHERE loaned_to = :user_id
  ORDER BY 1
-/
 
 -- name: loan_books!
 --
@@ -48,4 +46,3 @@ UPDATE library
    SET loaned_to = :user_id
      , loaned_on = current_timestamp
  WHERE book_title IN (:book_titles)
-/

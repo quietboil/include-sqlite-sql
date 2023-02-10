@@ -9,24 +9,32 @@
 Write your SQL and save it in a file. For example, let's say the following is saved as `library.sql` in the project's `src` folder:
 
 ```sql
--- name: get_loaned_books?
+-- name: get_loaned_books ?
+--
 -- Returns the list of books loaned to a patron
+--
 -- # Parameters
+--
 -- param: user_id: &str - user ID
+--
 SELECT book_title
   FROM library
  WHERE loaned_to = :user_id
- ORDER BY 1;
+ ORDER BY 1
 
 -- name: loan_books!
+--
 -- Updates the book records to reflect loan to a patron
+--
 -- # Parameters
+--
+-- param: book_titles: &str - book titles
 -- param: user_id: &str - user ID
--- param: book_ids: u32 - book IDs
+--
 UPDATE library
    SET loaned_to = :user_id
      , loaned_on = current_timestamp
- WHERE book_id IN (:book_ids);
+ WHERE book_title IN (:book_titles)
 ```
 
 And then use it in Rust as:
@@ -38,15 +46,13 @@ use rusqlite::{Result, Connection};
 include_sql!("src/library.sql");
 
 fn main() -> Result<()> {
-    let args : Vec<String> = std::env::args().collect();
-    let dbpath = &args[1];
-    let user_id = &args[2];
+    let db = Connection::open("library.db")?;
 
-    let db = Connection::open(dbpath)?;
+    db.loan_books(&["War and Peace", "Gone With the Wind"], "Sheldon Cooper")?;
 
-    db.get_loaned_books(user_id, |row| {
-        let book_title : &str = row.get_ref("book_title")?.as_str()?;
-        println!("{}", book_title);
+    db.get_loaned_books("Sheldon Cooper", |row| {
+        let book_title : &str = row.get_ref(0)?.as_str()?;
+        println!("{book_title}");
         Ok(())
     })?;
 
@@ -58,7 +64,16 @@ fn main() -> Result<()> {
 
 The included [documentation][3] describes the supported SQL file format and provides additional details on the generated code.
 
+# 💥 Breaking Changes in 0.2
+
+* [include-sql][1] changed optional statement terminator from `;` to `/`. SQL files that used `;` terminator would need to change it to `/` or remove it completely.
+
+# ✨ New Features in 0.2
+
+* [include-sqlite-sql][3] now supports statement [batches][4]. Statement variant selector for this is `&`. See [library.sql][5] for an example of its use.
 
 [1]: https://crates.io/crates/include-sql
 [2]: https://crates.io/crates/rusqlite
 [3]: https://quietboil.github.io/include-sqlite-sql
+[4]: https://docs.rs/rusqlite/latest/rusqlite/struct.Connection.html#method.execute_batch
+[5]: examples/library.sql
