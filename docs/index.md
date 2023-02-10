@@ -35,7 +35,7 @@ UPDATE library
 
 And then use it in Rust as:
 
-```rust , ignore
+```rust
 use include_sqlite_sql::{include_sql, impl_sql};
 use rusqlite::{Result, Connection};
 
@@ -82,7 +82,7 @@ SELECT book_title FROM library WHERE loaned_to = :user_id;
 
 The method with the following signature is generated:
 
-```rust , ignore
+```rust
 fn get_loaned_books<F>(&self, user_id: &str, row_callback: F) -> rusqlite::Result<()>
 where F: Fn(&rusqlite::Row) -> rusqlite::Result<()>;
 ```
@@ -107,7 +107,7 @@ UPDATE library
 
 The method with the following signature is generated:
 
-```rust , ignore
+```rust
 fn loan_books(&self, user_id: &str, book_ids: &[u32]) -> rusqlite::Result<usize>;
 ```
 
@@ -130,7 +130,7 @@ RETURNING book_id;
 
 The method with the following signature is generated:
 
-```rust , ignore
+```rust
 fn add_new_book<F,R>(&self, isbn: &str, book_title: &str, row_callback: F) -> rusqlite::Result<R>
 where F: FnOnce(&rusqlite::Row) -> rusqlite::Result<R>;
 ```
@@ -149,7 +149,7 @@ SELECT book_title
 
 Then the signature of the generated method would be:
 
-```rust , ignore
+```rust
 fn get_loaned_books<F>(&self, user_id: impl rusqlite::ToSql, row_callback: F) -> rusqlite::Result<()>
 where F: Fn(&rusqlite::Row) -> rusqlite::Result<()>;
 ```
@@ -166,7 +166,7 @@ UPDATE library
 
 The signature of the generated method would be:
 
-```rust , ignore
+```rust
 fn loan_books<BookIds: rusqlite::ToSql>(&self, user_id: impl rusqlite::ToSql, book_ids: &[BookIds]) -> rusqlite::Result<usize>;
 ```
 
