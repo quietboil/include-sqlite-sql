@@ -14,7 +14,8 @@ SELECT Artist.Name AS artist_name
   FROM Album
   JOIN Artist ON Artist.ArtistId = Album.ArtistId
  WHERE Artist.Name LIKE :artist_name
- ORDER BY 1, 2;
+ ORDER BY 1, 2
+/
 
 -- name: count_albums?
 -- Returns number of albums for the specified artist(s)
@@ -26,19 +27,21 @@ SELECT Artist.Name AS artist_name
   JOIN Artist ON Artist.ArtistId = Album.ArtistId
  WHERE Artist.Name LIKE :artist_name
  GROUP BY Artist.Name
- ORDER BY 2 DESC, 1;
+ ORDER BY 2 DESC, 1
+/
 
 -- name: get_customers?
 -- Retrieves names of the customers from the specified state
 -- that work at the specified compaies
 -- ## Parameters
--- param: state: &str - state abbreviation
 -- param: companies: &str - names of companies
+-- param: state: &str - state abbreviation
 SELECT DISTINCT LastName as last_name, FirstName as first_name
   FROM Customer
  WHERE State = :state
    AND Company IN (:companies)
- ORDER BY 1, 2;
+ ORDER BY 1, 2
+/
 
 -- name: get_customers_gen?
 -- Retrieves names of the customers from the specified state
@@ -47,17 +50,19 @@ SELECT DISTINCT LastName as last_name, FirstName as first_name
   FROM Customer
  WHERE State = :state
    AND Company IN (:companies)
- ORDER BY 1, 2;
+ ORDER BY 1, 2
+/
 
 -- name: create_new_genre!
 --
 -- Inserts new genre record
 --
 -- # Parameters
--- param: genre_id: i32 - genre ID
 -- param: name: &str - name of the new genre
+-- param: genre_id: i32 - genre ID
 --
-INSERT INTO Genre (GenreId, Name) VALUES (:genre_id, :name);
+INSERT INTO Genre (GenreId, Name) VALUES (:genre_id, :name)
+/
 
 -- name: delete_genre->
 --
@@ -66,12 +71,15 @@ INSERT INTO Genre (GenreId, Name) VALUES (:genre_id, :name);
 -- # Parameters
 -- param: genre_id: i32 - genre ID
 --
-DELETE FROM Genre WHERE GenreId = :genre_id RETURNING Name;
+DELETE FROM Genre WHERE GenreId = :genre_id RETURNING Name
+/
 
 -- name: begin_transaction!
 -- Starts database transaction
-BEGIN DEFERRED;
+BEGIN DEFERRED
+/
 
 -- name: rollback!
 -- Rolls the current transaction back
-ROLLBACK;
+ROLLBACK
+/

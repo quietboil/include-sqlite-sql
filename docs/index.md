@@ -6,7 +6,7 @@ Add `include-sqlite-sql` as a dependency:
 
 ```toml
 [dependencies]
-include-sqlite-sql = "0.1"
+include-sqlite-sql = "0.2"
 ```
 
 Write your SQL and save it in a file. For example, let's say the following is the content of the `library.sql` file that is saved in the project's `src` folder:
@@ -19,17 +19,18 @@ Write your SQL and save it in a file. For example, let's say the following is th
 SELECT book_title
   FROM library
  WHERE loaned_to = :user_id
- ORDER BY 1;
-
+ ORDER BY 1
+/
 -- name: loan_books!
 -- Updates the book records to reflect loan to a patron
 -- # Parameters
+-- param: book_titles: &str - book titles
 -- param: user_id: &str - user ID
--- param: book_ids: u32 - book IDs
 UPDATE library
    SET loaned_to = :user_id
      , loaned_on = current_timestamp
- WHERE book_id IN (:book_ids);
+ WHERE book_title IN (:book_titles)
+/
 ```
 
 And then use it in Rust as:
@@ -41,15 +42,13 @@ use rusqlite::{Result, Connection};
 include_sql!("src/library.sql");
 
 fn main() -> Result<()> {
-    let args : Vec<String> = std::env::args().collect();
-    let dbpath = &args[1];
-    let user_id = &args[2];
+    let db = Connection::open("library.db")?;
 
-    let db = Connection::open(dbpath)?;
+    db.loan_books(&["War and Peace", "Gone With the Wind"], "Sheldon Cooper")?;
 
-    db.get_loaned_books(user_id, |row| {
+    db.get_loaned_books("Sheldon Cooper", |row| {
         let book_title : &str = row.get_ref("book_title")?.as_str()?;
-        println!("{}", book_title);
+        println!("{book_title}");
         Ok(())
     })?;
 
@@ -68,6 +67,7 @@ Please see the **Anatomy of the Included SQL File** in [include-sql][4] document
 **include-sqlite-sql** generates 3 variants of database access methods using the following selectors:
 * `?` - methods that process rows retrieved by `SELECT`,
 * `!` - methods that execute all other non-`SELECT` methods, and
+* `&` - methods that execute multiple SQL statements (as a batch), and
 * `->` - methods that execute `RETURNING` statements and provide access to returned data.
 
 ## Process Selected Rows
@@ -84,7 +84,7 @@ The method with the following signature is generated:
 
 ```rust , ignore
 fn get_loaned_books<F>(&self, user_id: &str, row_callback: F) -> rusqlite::Result<()>
-where F: Fn(&rusqlite::Row<'_>) -> rusqlite::Result<()>;
+where F: Fn(&rusqlite::Row) -> rusqlite::Result<()>;
 ```
 
 Where:
@@ -132,7 +132,7 @@ The method with the following signature is generated:
 
 ```rust , ignore
 fn add_new_book<F,R>(&self, isbn: &str, book_title: &str, row_callback: F) -> rusqlite::Result<R>
-where F: FnOnce(&rusqlite::Row<'_>) -> rusqlite::Result<R>;
+where F: FnOnce(&rusqlite::Row) -> rusqlite::Result<R>;
 ```
 
 # Inferred Parameter Types
@@ -151,7 +151,7 @@ Then the signature of the generated method would be:
 
 ```rust , ignore
 fn get_loaned_books<F>(&self, user_id: impl rusqlite::ToSql, row_callback: F) -> rusqlite::Result<()>
-where F: Fn(&rusqlite::Row<'_>) -> rusqlite::Result<()>;
+where F: Fn(&rusqlite::Row) -> rusqlite::Result<()>;
 ```
 
 For the "IN list" type of parameters **include-sqlite-sql** will generate a method parameter as a slice where each element is the same generic type supplied by **include-sql**:

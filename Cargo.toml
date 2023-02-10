@@ -11,7 +11,7 @@ repository = "https://github.com/quietboil/include-sqlite-sql"
 homepage = "https://quietboil.github.io/include-sqlite-sql"
 
 [dependencies]
-include-sql = "0.2"
+include-sql = "0.3"
 
 [dev-dependencies]
 rusqlite = ">= 0.25"
