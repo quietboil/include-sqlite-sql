@@ -1,6 +1,6 @@
 #![cfg_attr(docsrs, doc = include_str!("../docs/index.md"))]
 
-pub use include_sql::include_sql;
+pub use ::include_sql::{include_sql, index_of};
 
 /**
 Generates Rust code to use included SQL.
@@ -332,11 +332,11 @@ macro_rules! sql_literal {
         $text
     };
     ($($name:ident)+ => $text:literal : $param:ident) => {
-        ::std::concat!( $text, '?', ::include_sql::index_of!($param in [ $( $name ),+ ] + 1) )
+        ::std::concat!( $text, '?', $crate::index_of!($param in [ $( $name ),+ ] + 1) )
     };
     ($($name:ident)+ => $text:literal : $param:ident $($tail:tt)+) => {
         ::std::concat!(
-            $text, '?', ::include_sql::index_of!($param in [ $( $name ),+ ] + 1),
+            $text, '?', $crate::index_of!($param in [ $( $name ),+ ] + 1),
             $crate::sql_literal!($($name)+ => $($tail)+)
         )
     };
