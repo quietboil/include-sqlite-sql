@@ -9,7 +9,7 @@ Add `include-sqlite-sql` as a dependency:
 include-sqlite-sql = "0.2"
 ```
 
-Write your SQL and save it in a file. For example, let's say the following is the content of the `library.sql` file that is saved in the project's `src` folder:
+Write your SQL and save it in a file. For example, let's say the following is the content of the `library.sql` file that is saved in the project's `sql` folder:
 
 ```sql
 -- name: get_loaned_books?
@@ -22,7 +22,7 @@ SELECT book_title
  ORDER BY 1
 /
 -- name: loan_books!
--- Updates the book records to reflect loan to a patron
+-- Updates the book records to reflect the loan to a patron
 -- # Parameters
 -- param: book_titles: &str - book titles
 -- param: user_id: &str - user ID
@@ -39,7 +39,7 @@ And then use it in Rust as:
 use include_sqlite_sql::{include_sql, impl_sql};
 use rusqlite::{Result, Connection};
 
-include_sql!("src/library.sql");
+include_sql!("/sql/library.sql");
 
 fn main() -> Result<()> {
     let db = Connection::open("library.db")?;
@@ -56,7 +56,10 @@ fn main() -> Result<()> {
 }
 ```
 
-> **Note** that the path to the SQL file must be specified relative to the project root, i.e. relative to `CARGO_MANIFEST_DIR`, even if you keep your SQL file alongside rust module that includes it. Because include-sql targets stable Rust this requirement will persist until [SourceFile][3] stabilizes.
+> **Note** that the path to the SQL file can be specified relative to the project root, i.e. relative to `CARGO_MANIFEST_DIR`, or relative to the rust module that includes it. 
+> * To specify the path to the included SQL file relative to the project root start the path with the `/` character.
+> * To specify the path to the included SQL file relative to the rust module that included it start the path with the `./` characters.
+> * For compatibility with the legacy code the path to the SQL file can also be specified without `/` or `./` prefix. In this case the path to it will be considered to be relative to the project root (as if it was specified with the leading `/`).
 
 # Anatomy of the Included SQL File
 

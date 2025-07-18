@@ -1,10 +1,10 @@
 use include_sqlite_sql::{include_sql, impl_sql};
 use rusqlite::{Result, Connection};
 
-include_sql!("examples/library.sql");
+include_sql!("/examples/library.sql");
 
 fn main() -> Result<()> {
-    let db = Connection::open(":memory:")?;
+    let db = Connection::open_in_memory()?;
 
     db.init_library()?;
 

@@ -4,10 +4,14 @@ This example uses sample [chinook](https://github.com/lerocha/chinook-database) 
 use include_sqlite_sql::{include_sql, impl_sql};
 use rusqlite::{Result, Connection};
 
-include_sql!("examples/chinook.sql");
+include_sql!("/examples/chinook.sql");
 
 fn main() -> Result<()> {
     let args : Vec<String> = std::env::args().collect();
+    if args.len() == 1 {
+        println!("Usage: {} <path_to_chinook_db> <artist_name>", &args[0]);
+        std::process::exit(1);
+    }
     let dbname = &args[1];
     let artist = &args[2];
 

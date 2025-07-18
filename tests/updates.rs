@@ -1,12 +1,12 @@
 use include_sqlite_sql::{include_sql, impl_sql};
 use rusqlite::{Result, Connection};
 
-include_sql!("tests/init.sql");
-include_sql!("tests/updates.sql");
+include_sql!("/tests/init.sql");
+include_sql!("/tests/updates.sql");
 
 #[test]
 fn updates() -> Result<()> {
-    let db = Connection::open(":memory:")?;
+    let db = Connection::open_in_memory()?;
 
     db.create_test_table()?;
     db.insert_test_quotes()?;

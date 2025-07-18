@@ -6,7 +6,7 @@
 
 # Example
 
-Write your SQL and save it in a file. For example, let's say the following is saved as `library.sql` in the project's `src` folder:
+Write your SQL and save it in a file. For example, let's say the following is saved as `library.sql` in the project's `sql` folder:
 
 ```sql
 -- name: get_loaned_books ?
@@ -43,7 +43,7 @@ And then use it in Rust as:
 use include_sqlite_sql::{include_sql, impl_sql};
 use rusqlite::{Result, Connection};
 
-include_sql!("src/library.sql");
+include_sql!("/sql/library.sql");
 
 fn main() -> Result<()> {
     let db = Connection::open("library.db")?;
@@ -63,14 +63,6 @@ fn main() -> Result<()> {
 # Documentation
 
 The included [documentation][3] describes the supported SQL file format and provides additional details on the generated code.
-
-# 💥 Breaking Changes in 0.2
-
-* [include-sql][1] changed optional statement terminator from `;` to `/`. SQL files that used `;` terminator would need to change it to `/` or remove it completely.
-
-# ✨ New Features in 0.2
-
-* [include-sqlite-sql][3] now supports statement [batches][4]. Statement variant selector for this is `&`. See [library.sql][5] for an example of its use.
 
 [1]: https://crates.io/crates/include-sql
 [2]: https://crates.io/crates/rusqlite
