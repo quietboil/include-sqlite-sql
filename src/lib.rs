@@ -7,10 +7,10 @@ Generates Rust code to use included SQL.
 
 This macro defines a trait with methods to access data and implements it for `rusqlite::Connection`.
 
-This macro recognizes and generates 3 variants of database access methods using the following selectors:
+This macro recognizes and generates 4 variants of database access methods using the following selectors:
 * `?` - methods that process rows retrieved by `SELECT`,
-* `!` - methods that execute all other non-`SELECT` methods, and
-* `&` - methods that execute multiple SQL statements (as a batch), and
+* `!` - methods that execute all other non-`SELECT` methods,
+* `&` - methods that execute multiple SQL statements (as a batch),
 * `->` - methods that execute `RETURNING` statements and provide access to returned data.
 
 For `SELECT` statements (`?`) like:

@@ -56,10 +56,10 @@ fn main() -> Result<()> {
 }
 ```
 
-> **Note** that the path to the SQL file can be specified relative to the project root, i.e. relative to `CARGO_MANIFEST_DIR`, or relative to the rust module that includes it. 
+> ℹ️ **Note** that the path to the SQL file can be specified relative to the project root, i.e. relative to `CARGO_MANIFEST_DIR`, or relative to the rust module that includes it. 
 > * To specify the path to the included SQL file relative to the project root start the path with the `/` character.
 > * To specify the path to the included SQL file relative to the rust module that included it start the path with the `./` characters.
-> * For compatibility with the legacy code the path to the SQL file can also be specified without `/` or `./` prefix. In this case the path to it will be considered to be relative to the project root (as if it was specified with the leading `/`).
+> * ⚠️ For compatibility with the legacy code the path to the SQL file can also be specified without `/` or `./` prefix. In this case the path to it will be considered to be relative to the project root (as if it was specified with the leading `/`).
 
 # Anatomy of the Included SQL File
 
@@ -67,10 +67,10 @@ Please see the **Anatomy of the Included SQL File** in [include-sql][4] document
 
 # Generated Methods
 
-**include-sqlite-sql** generates 3 variants of database access methods using the following selectors:
+**include-sqlite-sql** generates 4 variants of database access methods using the following selectors:
 * `?` - methods that process rows retrieved by `SELECT`,
-* `!` - methods that execute all other non-`SELECT` methods, and
-* `&` - methods that execute multiple SQL statements (as a batch), and
+* `!` - methods that execute all other non-`SELECT` methods,
+* `&` - methods that execute multiple SQL statements (as a batch),
 * `->` - methods that execute `RETURNING` statements and provide access to returned data.
 
 ## Process Selected Rows
@@ -117,6 +117,26 @@ fn loan_books(&self, user_id: &str, book_ids: &[u32]) -> rusqlite::Result<usize>
 Where:
 - `user_id` is a parameter that has the same name as the SQL parameter with the declared (in the SQL) type as `&str`,
 - `book_ids` is a parameter for the matching IN-list parameter where each item in a collection has type `u32`.
+
+## Execute a Batch of Statements
+
+For batches of statements like:
+
+```sql
+-- name: create_tables &
+-- Note that SQL statemetns in a batch cannot have any parameters.
+BEGIN;
+CREATE TABLE foo(x INTEGER);
+CREATE TABLE bar(y TEXT);
+COMMIT;
+/
+```
+
+Method with the following signature is generated:
+
+```rust , ignore
+fn create_tables(&self) -> rusqlite::Result<()>;
+```
 
 ## RETURNING Statements
 
